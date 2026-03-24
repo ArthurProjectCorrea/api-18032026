@@ -1,0 +1,15 @@
+# Dependências e build
+node_modules
+dist
+build
+coverage
+docs
+
+# Lockfiles (evita diff desnecessário)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
+
+# Changelog gerado pelo semantic-release (opcional)
+# CHANGELOG.md
