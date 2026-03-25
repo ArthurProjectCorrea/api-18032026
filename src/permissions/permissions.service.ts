@@ -10,4 +10,11 @@ export class PermissionsService {
       orderBy: { name: 'asc' },
     });
   }
+
+  update(id: number, name: string) {
+    return this.prisma.permission.update({
+      where: { id },
+      data: { name },
+    });
+  }
 }

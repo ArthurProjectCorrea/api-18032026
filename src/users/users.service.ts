@@ -45,6 +45,7 @@ export class UsersService {
         data: {
           id: firebaseUser.uid,
           name,
+          email,
           registration: registration || '',
           position_id,
         },

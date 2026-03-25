@@ -12,6 +12,7 @@ export class PrismaService
 
   constructor() {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    // Cast para any devido a incompatibilidade de versões de @types/pg entre prisma e o projeto
     const adapter = new PrismaPg(pool as any);
 
     super({ adapter });

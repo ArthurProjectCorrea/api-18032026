@@ -13,6 +13,14 @@ import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
 
 import { ConfigModule } from '@nestjs/config';
+import { LogsModule } from './logs/logs.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditLogInterceptor } from './common/interceptors/audit-log/audit-log.interceptor';
+import { SchoolingModule } from './schooling/schooling.module';
+import { PenaltyRegimeModule } from './penalty-regime/penalty-regime.module';
+import { PeopleModule } from './people/people.module';
+import { SeeuServiceModule } from './seeu-service/seeu-service.module';
+import { CepModule } from './cep/cep.module';
 
 @Module({
   imports: [
@@ -27,9 +35,21 @@ import { ConfigModule } from '@nestjs/config';
     AccessesModule,
     MailModule,
     UsersModule,
+    LogsModule,
+    PeopleModule,
+    SeeuServiceModule,
+    SchoolingModule,
+    PenaltyRegimeModule,
+    CepModule,
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditLogInterceptor,
+    },
+  ],
 })
 export class AppModule {}

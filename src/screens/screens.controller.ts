@@ -1,16 +1,28 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Patch,
+  Body,
+  Query,
+} from '@nestjs/common';
 import { ScreensService } from './screens.service';
 import { AuthGuard } from '@/auth/auth.guard';
-import { PermissionsGuard } from '@/auth/permissions.guard';
 
-@Controller('screens')
-@UseGuards(AuthGuard, PermissionsGuard)
+@Controller('admin/screens')
+@UseGuards(AuthGuard)
 export class ScreensController {
   constructor(private readonly screensService: ScreensService) {}
 
   @Get()
-  findAll() {
-    return this.screensService.findAll();
+  findAll(@Query('all') all?: string) {
+    return this.screensService.findAll(all === 'true');
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body('name') name: string) {
+    return this.screensService.update(+id, name);
   }
 
   @Get('key/:key')

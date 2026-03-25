@@ -33,6 +33,7 @@ model Position {
 model Profile {
   id                  String        @id @db.VarChar(128) // Firebase UID
   name                String
+  email               String?
   registration        String        @default("")
   avatar_url          String        @default("")
   position_id         Int?
@@ -81,4 +82,141 @@ model Access {
   updated_at    DateTime   @updatedAt
 
   @@map("accesses")
+}
+
+model Log {
+  id          Int      @id @default(autoincrement())
+  user_id     String? // Firebase UID do usuário que executou a ação
+  user_name   String? // Nome legível do usuário
+  action      String // 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', etc.
+  table_name  String?
+  record_id   String?
+  description String
+  old_data    Json?
+  new_data    Json?
+  created_at  DateTime @default(now())
+
+  @@map("logs")
+}
+
+// ============================================================
+// MÓDULO SEEU & PESSOAS
+// ============================================================
+
+model Schooling {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  people     Person[]
+
+  @@map("schooling")
+}
+
+model PenaltyRegime {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  lawsuits   Lawsuit[]
+
+  @@map("penalty_regime")
+}
+
+model Person {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String
+  mothers_name  String
+  fathers_name  String?
+  date_of_birth DateTime  @db.Date
+  cpf           String    @unique
+  schooling_id  Int
+  schooling     Schooling @relation(fields: [schooling_id], references: [id])
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  lawsuits   Lawsuit[]
+  telephones Telephone[]
+  addresses  Address[]
+
+  @@map("people")
+}
+
+model Lawsuit {
+  id                 String        @id @default(uuid()) @db.Uuid
+  person_id          String        @db.Uuid
+  person             Person        @relation(fields: [person_id], references: [id], onDelete: Cascade)
+  number             String        @unique // correspondente ao "document" no legado
+  regime_progression DateTime      @db.Date
+  penalty_regime_id  Int
+  penalty_regime     PenaltyRegime @relation(fields: [penalty_regime_id], references: [id])
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @updatedAt
+  seeu_services      SeeuService[]
+
+  @@map("people_lawsuit")
+}
+
+model Telephone {
+  id         Int      @id @default(autoincrement())
+  telephone  String
+  person_id  String   @db.Uuid
+  person     Person   @relation(fields: [person_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("people_telephone")
+  seeu_services SeeuService[]
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  cep_id     Int?
+  cep        Cep?     @relation(fields: [cep_id], references: [id])
+  not_cep    String?
+  number     String?
+  complement String?
+  person_id  String   @db.Uuid
+  person     Person   @relation(fields: [person_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("people_address")
+  seeu_services SeeuService[]
+}
+
+model Cep {
+  id           Int      @id @default(autoincrement())
+  cep          String   @unique
+  street       String?
+  neighborhood String?
+  city         String?
+  state        String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("ceps")
+  addresses    Address[]
+}
+
+model SeeuService {
+  id                    String   @id @default(uuid()) @db.Uuid
+  lawsuit_id            String   @db.Uuid
+  lawsuit               Lawsuit  @relation(fields: [lawsuit_id], references: [id])
+  telephone_id          Int?
+  telephone             Telephone? @relation(fields: [telephone_id], references: [id])
+  address_id            Int?
+  address               Address?   @relation(fields: [address_id], references: [id])
+  proof_of_residence    String   @db.Text
+  proof_of_employment   String   @db.Text
+  proof_of_legal_waiver String   @db.Text
+  is_first_signature    Boolean  @default(false)
+  created_by            String   @db.VarChar(128) // Relacionado a Profile.id
+  updated_by            String   @db.VarChar(128)
+  deleted_by            String?  @db.VarChar(128)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  deleted_at            DateTime?
+
+  @@map("seeu_service")
 }
