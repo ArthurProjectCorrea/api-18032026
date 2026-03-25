@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// INFRAESTRUTURA (USUÁRIOS E PERMISSÕES)
+model Department {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  positions  Position[]
+
+  @@map("departments")
+}
+
+model Position {
+  id            Int          @id @default(autoincrement())
+  name          String
+  department_id Int
+  department    Department   @relation(fields: [department_id], references: [id])
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  profiles      Profile[]
+  accesses      Access[]
+
+  @@map("positions")
+}
+
+model Profile {
+  id                  String        @id @db.VarChar(128) // Firebase UID
+  name                String
+  registration        String        @default("")
+  avatar_url          String        @default("")
+  position_id         Int?
+  position            Position?     @relation(fields: [position_id], references: [id])
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+
+  @@map("profiles")
+}
+
+model Screen {
+  id           Int      @id @default(autoincrement())
+  name         String
+  name_key     String   @unique
+  path_pattern String?  @unique
+  breadcrumb   Json?
+  is_sub_screen Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  accesses     Access[]
+
+  @@map("screens")
+}
+
+model Permission {
+  id         Int      @id @default(autoincrement())
+  name       String
+  name_key   String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  accesses   Access[]
+
+  @@map("permissions")
+}
+
+model Access {
+  id            Int        @id @default(autoincrement())
+  position_id   Int
+  position      Position   @relation(fields: [position_id], references: [id], onDelete: Cascade)
+  screen_id     Int
+  screen        Screen     @relation(fields: [screen_id], references: [id])
+  permission_id Int
+  permission    Permission @relation(fields: [permission_id], references: [id])
+  scope         String?    @default("all") // 'all', 'department', 'own'
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  @@map("accesses")
+}
